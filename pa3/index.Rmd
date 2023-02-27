@@ -1,0 +1,62 @@
+---
+title: "PA3"
+date:  "Last update:`r Sys.Date()`"
+author: "La Ramirez"
+Output: html_document
+editor_options: 
+  chunk_output_type: console
+output: 
+  html_document: 
+    highlight: zenburn
+    theme: sandstone
+---
+
+
+```{r, 'setup', message=FALSE}
+library("tidyverse")
+library("untidydata")
+library("languageR")
+library("dplyr")
+library("stringr")
+
+```
+
+
+
+
+```{r, out.width="100%", fig.retina=2}
+primingHeidPrevRT %>%
+  mutate(One = stringr::str_replace(RTmin1, "RTmin1", "1")) %>% 
+  mutate(Two = stringr::str_replace(RTmin2, "RTmin2", "2")) %>%
+  mutate(Three = stringr::str_replace(RTmin3, "RTmin3", "3")) %>%
+  mutate(Four = stringr::str_replace(RTmin4, "RTmin4", "4")) %>%
+  gather(key = "RTmin", value = "Score", One:Four) %>% 
+   ##deleting the columns that have been pivoted
+  select(-RTmin1, -RTmin2, -RTmin3, -RTmin4) %>% 
+  ##calculating some descriptive statistics
+  group_by(LengthInLetters) %>% 
+  summarize(
+    avg = mean(RT),
+    sd = sd(RT),
+    min = min(RT),
+    max= max(RT)
+    ) 
+   ##calculating bivariate regression
+   model <- lm(RT ~ RTtoPrime, data=primingHeidPrevRT) 
+   summary(model) 
+   ##Generate a plot
+  primingHeidPrevRT %>% 
+     ggplot() +
+     ##aes (x = RTtoPrime, y = LengthInLetters) +
+     aes (x = RT, y = RTtoPrime) +
+     geom_point() +
+     geom_smooth(method = "lm")
+  
+  
+  
+```
+Some comments about this assignment:
+
+The residuals -errors- of this model show a min of -0.66401 and a max of 0.89910, which is a wide range and therefore the predictions made based on this model might not be too accurate. We also have a negative median, which means most of the residuals are negative. 
+
+In the linear regression model, RT and RTtoPrime seem to be related with an Intercept of 3.86138 and a slope of 0.41148, that is, for every increase of one in the Y axis -the independent variable, the X axis -dependent variable, increases 0.41148. Therefore, and as seen in the graphic, there seems to be a positive relationship between both variables.
